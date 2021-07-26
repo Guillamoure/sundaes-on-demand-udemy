@@ -1,6 +1,7 @@
 import { render, screen } from "../../../test-utils/testing-library-utils";
 import userEvent from "@testing-library/user-event";
 import Options from "../Options";
+import OrderEntry from "../OrderEntry";
 
 test("update scoop subtotal when scoops change", async () => {
   render(<Options optionType="scoops" />);
@@ -44,4 +45,84 @@ test("update toppings subtotal when toppings change", async () => {
 
   userEvent.click(cherryInput);
   expect(toppingsSubtotal).toHaveTextContent("1.50");
+});
+
+describe("grand total", () => {
+  test("grand total starts at $0.00", () => {
+    render(<OrderEntry />);
+
+    const grandTotal = screen.getByRole("heading", {
+      name: /grand total: \$/i
+    });
+    expect(grandTotal).toHaveTextContent("0.00");
+  });
+  test("grand total updates properly if scoop is added first", async () => {
+    render(<OrderEntry />);
+
+    const grandTotal = screen.getByRole("heading", {
+      name: /grand total: \$/i
+    });
+
+    const vanillaInput = await screen.findByRole("spinbutton", {
+      name: "Vanilla"
+    });
+    userEvent.clear(vanillaInput);
+    userEvent.type(vanillaInput, "1");
+    expect(grandTotal).toHaveTextContent("2.00");
+
+    const mmsInput = await screen.findByRole("checkbox", { name: "M&Ms" });
+    userEvent.click(mmsInput);
+    expect(grandTotal).toHaveTextContent("3.50");
+  });
+  test("grand total updates properly if topping is added first", async () => {
+    render(<OrderEntry />);
+
+    const grandTotal = screen.getByRole("heading", {
+      name: /grand total: \$/i
+    });
+
+    const mmsInput = await screen.findByRole("checkbox", { name: "M&Ms" });
+    userEvent.click(mmsInput);
+    expect(grandTotal).toHaveTextContent("1.50");
+
+    const chocolateInput = await screen.findByRole("spinbutton", {
+      name: "Chocolate"
+    });
+    userEvent.clear(chocolateInput);
+    userEvent.type(chocolateInput, "2");
+    expect(grandTotal).toHaveTextContent("5.50");
+  });
+  test("grand total updates properly if item is removed", async () => {
+    render(<OrderEntry />);
+
+    const grandTotal = screen.getByRole("heading", {
+      name: /grand total: \$/i
+    });
+
+    const vanillaInput = await screen.findByRole("spinbutton", {
+      name: "Vanilla"
+    });
+    userEvent.clear(vanillaInput);
+    userEvent.type(vanillaInput, "2");
+    expect(grandTotal).toHaveTextContent("4.00");
+
+    const hotFudgeInput = await screen.findByRole("checkbox", {
+      name: "Hot fudge"
+    });
+    userEvent.click(hotFudgeInput);
+    expect(grandTotal).toHaveTextContent("5.50");
+
+    const chocolateInput = await screen.findByRole("spinbutton", {
+      name: "Chocolate"
+    });
+    userEvent.clear(chocolateInput);
+    userEvent.type(chocolateInput, "1");
+    expect(grandTotal).toHaveTextContent("7.50");
+
+    userEvent.type(vanillaInput, "0");
+    expect(grandTotal).toHaveTextContent("3.50");
+
+    userEvent.click(hotFudgeInput);
+    expect(grandTotal).toHaveTextContent("2.00");
+  });
 });
