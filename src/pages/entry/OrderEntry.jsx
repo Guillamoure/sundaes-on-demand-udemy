@@ -10,7 +10,10 @@ export default function OrderEntry({ updateOrderStatus }) {
       <Options optionType="scoops" />
       <Options optionType="toppings" />
       <h2>Grand Total: {orderDetails.totals.grandTotal}</h2>
-      <button onClick={() => updateOrderStatus("summary")}>
+      <button
+        onClick={() => updateOrderStatus("summary")}
+        disabled={orderDetails.totals.scoops === "$0.00"}
+      >
         Move to Order Summary
       </button>
     </div>

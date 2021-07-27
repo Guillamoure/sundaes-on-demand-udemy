@@ -37,9 +37,14 @@ test("order phases for happy path", async () => {
   const orderButton = screen.getByRole("button", { name: "Confirm Order" });
   userEvent.click(orderButton);
 
+  const loadingExists = screen.getByText(/loading/i);
+  expect(loadingExists).toBeInTheDocument();
+
   // confirm order number on confirmation page
   const orderNumber = await screen.findByText(/your order number is/i);
   expect(orderNumber).toBeInTheDocument();
+  const loadingDoesNotExist = screen.queryByText(/loading/i);
+  expect(loadingDoesNotExist).not.toBeInTheDocument();
 
   // click "new order" button on confirmation page
   const newOrderButton = screen.getByRole("button", { name: "New Order" });
@@ -56,4 +61,32 @@ test("order phases for happy path", async () => {
   expect(toppingsSubtotal).toHaveTextContent("0.00");
 
   // do we need to await anything to avoid test errors?
+});
+
+test("order phases for happy path, no toppings", async () => {
+  //render App
+  render(<App />);
+
+  // add ice cream scoops and toppings
+  const vanillaInput = await screen.findByRole("spinbutton", {
+    name: "Vanilla"
+  });
+  userEvent.clear(vanillaInput);
+  userEvent.type(vanillaInput, "2");
+
+  // find a click order button
+  const orderSummaryButton = screen.getByRole("button", {
+    name: "Move to Order Summary"
+  });
+  userEvent.click(orderSummaryButton);
+
+  // check summary information based on order
+  const orderSummary = screen.getByText(
+    "Your order consists of 2 scoops of vanilla.",
+    { exact: false }
+  );
+  expect(orderSummary).toBeInTheDocument();
+
+  const noToppings = screen.queryByText(/topping/i);
+  expect(noToppings).not.toBeInTheDocument();
 });
