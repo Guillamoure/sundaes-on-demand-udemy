@@ -4,7 +4,7 @@ import Button from "react-bootstrap/Button";
 import Popover from "react-bootstrap/Popover";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 
-const SummaryForm = () => {
+const SummaryForm = ({ updateOrderStatus }) => {
   const [disabled, toggleDisabled] = React.useState(true);
 
   const popup = (
@@ -32,7 +32,12 @@ const SummaryForm = () => {
           onChange={() => toggleDisabled(!disabled)}
         />
       </Form.Group>
-      <Button variant="primary" type="submit" disabled={disabled}>
+      <Button
+        variant="primary"
+        type="submit"
+        disabled={disabled}
+        onClick={() => updateOrderStatus("confirmation")}
+      >
         Confirm Order
       </Button>
     </Form>
